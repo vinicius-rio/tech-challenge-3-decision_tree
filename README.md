@@ -599,14 +599,14 @@ Como o `CrossValidator` do Spark ML utiliza caching interno incompatível com as
 Amostra estratificada:
 
 ```text
-≈ 401 mil registros de 2023
+401.063 registros de 2023
 ```
 
 Divisão:
 
 ```text
-80% treino
-20% validação
+Treino:    320.673 registros
+Validação:  80.390 registros
 ```
 
 Valores testados:
@@ -621,9 +621,9 @@ Resultados:
 
 | regParam | ROC-AUC validação |
 |---:|---:|
-| 0,00 | **0,63698** |
-| 0,01 | 0,63111 |
-| 0,10 | 0,60749 |
+| 0,00 | **0,636982** |
+| 0,01 | 0,631282 |
+| 0,10 | 0,607584 |
 
 Selecionado:
 
@@ -652,18 +652,27 @@ O teste final utiliza exclusivamente:
 
 ### 11.2 Métricas finais
 
-O modelo enxuto obteve aproximadamente:
+O modelo enxuto obteve os seguintes resultados no teste temporal de 2024:
 
 | Métrica | Valor |
 |---|---:|
-| Accuracy | **58,55%** |
-| Precision | **60,87%** |
-| Recall | **57,70%** |
-| Specificity | **59,49%** |
-| F1 | **59,24%** |
-| Balanced Accuracy | **58,59%** |
-| Macro-F1 | **58,54%** |
-| ROC-AUC | **0,6213** |
+| Accuracy | **58,5535%** |
+| Precision | **60,8746%** |
+| Recall | **57,6973%** |
+| Specificity | **59,4888%** |
+| F1 | **59,2434%** |
+| Balanced Accuracy | **58,5931%** |
+| Macro-F1 | **58,5416%** |
+| ROC-AUC | **0,621262** |
+
+Matriz de confusão do teste temporal:
+
+| Resultado | Registros |
+|---|---:|
+| Verdadeiro Positivo (TP) | 638.778 |
+| Verdadeiro Negativo (TN) | 602.884 |
+| Falso Positivo (FP) | 410.557 |
+| Falso Negativo (FN) | 468.341 |
 
 ### 11.3 Baseline
 
@@ -674,19 +683,19 @@ Baseline:
 Accuracy do baseline:
 
 ```text
-52,21%
+52,2088%
 ```
 
 Accuracy do modelo:
 
 ```text
-58,55%
+58,5535%
 ```
 
 Ganho absoluto:
 
 ```text
-≈ +6,34 pontos percentuais
++6,3447 pontos percentuais
 ```
 
 ### 11.4 Interpretação
@@ -696,8 +705,8 @@ A capacidade discriminatória do modelo é **moderada**, mas real.
 A estabilidade entre validação e teste temporal também é relevante:
 
 ```text
-ROC-AUC validação 2023 ≈ 0,637
-ROC-AUC teste 2024     ≈ 0,621
+ROC-AUC validação 2023 = 0,636982
+ROC-AUC teste 2024     = 0,621262
 ```
 
 A queda é pequena o suficiente para indicar alguma estabilidade temporal.
@@ -767,13 +776,13 @@ Modelo
 Regressão Logística
 
 ROC-AUC
-≈ 0,621
+0,621262
 
 Accuracy
-≈ 58,55%
+58,5535%
 
 Baseline
-≈ 52,21%
+52,2088%
 ```
 
 ### Interpretação executiva
@@ -1190,22 +1199,22 @@ Estratégia de tuning:
 
 ```text
 Amostra estratificada de 2023
-≈ 401 mil registros
+401.063 registros
 
-80%
-treino
+Treino
+320.673 registros
 
-20%
-validação
+Validação
+80.390 registros
 ```
 
 Valores avaliados:
 
 | regParam | ROC-AUC validação |
 |---:|---:|
-| 0,00 | **0,63698** |
-| 0,01 | 0,63111 |
-| 0,10 | 0,60749 |
+| 0,00 | **0,636982** |
+| 0,01 | 0,631282 |
+| 0,10 | 0,607584 |
 
 Modelo selecionado:
 
@@ -1250,23 +1259,35 @@ Principais evidências:
 - odds ratios;
 - persistência dos resultados.
 
-Resultados aproximados:
+Resultados definitivos:
 
 ```text
 Accuracy
-58,55%
+58,5535%
+
+Precision
+60,8746%
+
+Recall
+57,6973%
+
+Specificity
+59,4888%
+
+F1
+59,2434%
 
 Balanced Accuracy
-58,59%
+58,5931%
 
 Macro-F1
-58,54%
+58,5416%
 
 ROC-AUC
-0,6213
+0,621262
 
 Baseline Accuracy
-52,21%
+52,2088%
 ```
 
 Tabelas produzidas:
@@ -1305,12 +1326,17 @@ ADICIONAR_LINK_VIDEO_NOTEBOOK_05
 | Features finais | 5 |
 | Modelo | Regressão Logística |
 | regParam | 0.0 |
-| ROC-AUC validação | 0,6370 |
-| ROC-AUC teste | 0,6213 |
-| Accuracy | 58,55% |
-| Balanced Accuracy | 58,59% |
-| Macro-F1 | 58,54% |
-| Baseline Accuracy | 52,21% |
+| ROC-AUC validação | 0,636982 |
+| ROC-AUC teste | 0,621262 |
+| Accuracy | 58,5535% |
+| Precision | 60,8746% |
+| Recall | 57,6973% |
+| Specificity | 59,4888% |
+| F1 | 59,2434% |
+| Balanced Accuracy | 58,5931% |
+| Macro-F1 | 58,5416% |
+| Baseline Accuracy | 52,2088% |
+| Ganho de Accuracy vs. baseline | +6,3447 p.p. |
 
 ---
 
