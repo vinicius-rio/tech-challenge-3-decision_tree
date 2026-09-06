@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tech Challenge Fase 3 — Predição da Alfabetização no Brasil</title>
+  <style>
+    :root {
+      --fiap: #ed145b;
+      --fiap-2: #ff4b86;
+      --ink: #050505;
+      --ink-2: #0d0d10;
+      --white: #ffffff;
+      --muted: #a7a7b0;
+      --line: rgba(255,255,255,.14);
+      --green: #7dffb2;
+      --yellow: #ffd166;
+      --cyan: #77e4ff;
+      --blue: #a8c7ff;
+      --shadow: 0 30px 80px rgba(0,0,0,.42);
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+      color: var(--white);
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+    }
+
+    body { user-select: none; }
+
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 18% 22%, rgba(237,20,91,.15), transparent 34%),
+        radial-gradient(circle at 84% 80%, rgba(237,20,91,.09), transparent 32%),
+        #000;
+    }
+
+    .deck {
+      position: relative;
+      width: 1600px;
+      height: 900px;
+      transform-origin: center center;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      background: var(--ink);
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: none;
+      padding: 62px 78px 58px;
+      background:
+        linear-gradient(130deg, rgba(255,255,255,.018), transparent 45%),
+        var(--ink);
+      overflow: hidden;
+    }
+
+    .slide.active { display: block; }
+
+    .grid-bg::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.032) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.032) 1px, transparent 1px);
+      background-size: 54px 54px;
+      mask-image: linear-gradient(to bottom, black, transparent 92%);
+      pointer-events: none;
+    }
+
+    .noise::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: .08;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+      mix-blend-mode: soft-light;
+    }
+
+    .brand {
+      position: absolute;
+      top: 38px;
+      left: 78px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      z-index: 20;
+    }
+
+    .brand svg { width: 116px; height: auto; }
+    .brand-tag {
+      font-size: 13px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: #c6c6cb;
+      padding-left: 18px;
+      border-left: 1px solid rgba(255,255,255,.22);
+    }
+
+    .slide-no {
+      position: absolute;
+      right: 78px;
+      top: 42px;
+      font-size: 13px;
+      color: #8f8f97;
+      letter-spacing: .2em;
+      z-index: 20;
+    }
+
+    .eyebrow {
+      color: var(--fiap);
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      margin-bottom: 22px;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      font-size: 84px;
+      line-height: .96;
+      letter-spacing: -.055em;
+      font-weight: 950;
+      max-width: 1160px;
+      margin-bottom: 28px;
+    }
+    h2 {
+      font-size: 60px;
+      line-height: 1.02;
+      letter-spacing: -.045em;
+      font-weight: 950;
+      max-width: 1260px;
+      margin-bottom: 22px;
+    }
+    h3 {
+      font-size: 27px;
+      line-height: 1.15;
+      letter-spacing: -.02em;
+      font-weight: 850;
+    }
+    .lead {
+      font-size: 25px;
+      line-height: 1.42;
+      color: #d7d7db;
+      max-width: 1080px;
+    }
+    .muted { color: var(--muted); }
+    .pink { color: var(--fiap); }
+    .white { color: var(--white); }
+
+    .footer {
+      position: absolute;
+      left: 78px;
+      right: 78px;
+      bottom: 31px;
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      color: #7d7d85;
+      font-size: 12px;
+      letter-spacing: .06em;
+      z-index: 20;
+    }
+
+    .hero-content {
+      position: relative;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-top: 34px;
+      z-index: 2;
+    }
+
+    .cover-orb {
+      position: absolute;
+      width: 625px;
+      height: 625px;
+      right: -52px;
+      top: 142px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 32% 24%, rgba(255,255,255,.95), rgba(255,255,255,.08) 8%, transparent 9%),
+        radial-gradient(circle at 52% 48%, rgba(237,20,91,.88), rgba(237,20,91,.22) 34%, rgba(237,20,91,.055) 62%, transparent 70%);
+      filter: saturate(1.08);
+      box-shadow:
+        0 0 100px rgba(237,20,91,.24),
+        inset -40px -40px 100px rgba(0,0,0,.72),
+        inset 20px 20px 60px rgba(255,255,255,.08);
+      opacity: .92;
+    }
+    .cover-orb::after {
+      content: "";
+      position: absolute;
+      inset: 65px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 0 0 35px rgba(255,255,255,.025), 0 0 0 90px rgba(255,255,255,.018);
+    }
+    .cover-orbit {
+      position: absolute;
+      width: 840px;
+      height: 282px;
+      right: -120px;
+      top: 322px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 50%;
+      transform: rotate(-19deg);
+    }
+    .cover-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      width: fit-content;
+      font-size: 14px;
+      color: #d7d7dc;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .cover-kicker::before { content: ""; width: 36px; height: 4px; background: var(--fiap); }
+    .cover-subtitle { font-size: 24px; color: #bfc0c5; max-width: 900px; line-height: 1.4; }
+    .presenter { margin-top: 46px; display: flex; align-items: center; gap: 16px; font-size: 18px; color: #e9e9ec; }
+    .presenter-badge { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; background: var(--fiap); color: white; font-weight: 900; }
+
+    .two-col { display: grid; grid-template-columns: 1.05fr .95fr; gap: 52px; height: calc(100% - 76px); align-items: center; position: relative; z-index: 2; }
+    .problem-card {
+      background: linear-gradient(150deg, rgba(255,255,255,.075), rgba(255,255,255,.018));
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 26px;
+      padding: 34px;
+      min-height: 505px;
+      position: relative;
+      overflow: hidden;
+    }
+    .problem-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--fiap); }
+    .big-number { font-size: 116px; font-weight: 950; letter-spacing: -.07em; line-height: .9; color: white; margin: 12px 0 20px; }
+    .metric-label { font-size: 20px; line-height: 1.35; color: #d2d2d8; max-width: 530px; }
+    .challenge-list { display: grid; gap: 18px; margin-top: 30px; }
+    .challenge-item { display: grid; grid-template-columns: 52px 1fr; gap: 16px; align-items: center; padding: 18px 20px; border: 1px solid rgba(255,255,255,.1); border-radius: 16px; background: rgba(255,255,255,.025); }
+    .challenge-icon { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: rgba(237,20,91,.12); color: var(--fiap); font-size: 21px; font-weight: 900; }
+    .challenge-title { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+    .challenge-text { font-size: 14px; line-height: 1.4; color: #a9a9b1; }
+
+    .arch-wrap { position: relative; z-index: 2; margin-top: 26px; }
+    .arch-row { display: grid; grid-template-columns: 1.05fr 42px 1.05fr 42px 1.12fr 42px 1.08fr 42px 1.08fr; gap: 7px; align-items: stretch; }
+    .arch-card { min-height: 305px; padding: 24px 21px; border-radius: 24px; border: 1px solid rgba(255,255,255,.13); background: linear-gradient(160deg, rgba(255,255,255,.07), rgba(255,255,255,.018)); position: relative; overflow: hidden; }
+    .arch-card.highlight { border-color: rgba(237,20,91,.55); box-shadow: 0 0 45px rgba(237,20,91,.11); }
+    .arch-card.highlight::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px; background: var(--fiap); }
+    .arch-label { font-size: 13px; color: var(--fiap); text-transform: uppercase; letter-spacing: .14em; font-weight: 900; margin-bottom: 16px; }
+    .arch-title { font-size: 23px; font-weight: 900; margin-bottom: 16px; }
+    .arch-list { list-style: none; padding: 0; margin: 0; }
+    .arch-list li { position: relative; padding-left: 17px; margin-bottom: 11px; color: #bcbcc3; font-size: 14px; line-height: 1.35; }
+    .arch-list li::before { content: ""; position: absolute; width: 6px; height: 6px; border-radius: 50%; background: var(--fiap); left: 0; top: .48em; }
+    .arrow { display: grid; place-items: center; color: var(--fiap); font-size: 34px; font-weight: 200; }
+    .observability-bar { margin-top: 23px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .obs-item { border-radius: 15px; padding: 15px 18px; background: rgba(255,255,255,.035); border: 1px solid rgba(255,255,255,.09); font-size: 14px; color: #b9b9c0; }
+    .obs-item strong { color: white; }
+
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 36px; position: relative; z-index: 2; }
+    .stat { min-height: 216px; padding: 26px; border-radius: 24px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.035); display: flex; flex-direction: column; justify-content: space-between; }
+    .stat strong { font-size: 52px; line-height: .95; letter-spacing: -.05em; }
+    .stat span { color: #b5b5bd; font-size: 16px; line-height: 1.35; }
+    .stat em { font-style: normal; color: var(--fiap); text-transform: uppercase; font-size: 11px; letter-spacing: .14em; font-weight: 900; }
+    .stat.primary { background: linear-gradient(150deg, var(--fiap), #a50643); border-color: transparent; }
+    .stat.primary em, .stat.primary span { color: rgba(255,255,255,.84); }
+
+    .pipeline-progress { margin-top: 32px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+    .step { padding: 15px 10px; border-radius: 12px; background: rgba(255,255,255,.035); border: 1px solid rgba(255,255,255,.1); text-align: center; font-size: 12px; color: #a9a9b0; }
+    .step b { display: block; font-size: 15px; color: white; margin-bottom: 5px; }
+    .step.done { border-color: rgba(125,255,178,.4); background: rgba(125,255,178,.06); }
+    .step.done b::before { content: "✓ "; color: var(--green); }
+
+    .model-layout { display: grid; grid-template-columns: .9fr 1.1fr; gap: 42px; height: calc(100% - 82px); align-items: center; position: relative; z-index: 2; }
+    .model-card { min-height: 500px; border-radius: 30px; background: radial-gradient(circle at 82% 18%, rgba(237,20,91,.25), transparent 34%), linear-gradient(160deg, rgba(255,255,255,.075), rgba(255,255,255,.02)); border: 1px solid rgba(255,255,255,.14); padding: 34px; position: relative; overflow: hidden; }
+    .model-badge { display: inline-flex; gap: 10px; align-items: center; padding: 10px 14px; border-radius: 999px; background: rgba(237,20,91,.12); border: 1px solid rgba(237,20,91,.35); color: #ffdce8; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; font-weight: 900; }
+    .formula { margin: 42px 0 30px; font-size: 44px; line-height: 1.15; letter-spacing: -.03em; font-weight: 900; }
+    .feature-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 26px; }
+    .feature { padding: 16px; border-radius: 14px; background: rgba(255,255,255,.035); border: 1px solid rgba(255,255,255,.09); color: #d5d5da; font-size: 15px; }
+    .feature b { color: white; }
+
+    .result-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; height: calc(100% - 82px); align-items: center; position: relative; z-index: 2; }
+    .result-card { border: 1px solid rgba(255,255,255,.12); background: linear-gradient(160deg, rgba(255,255,255,.065), rgba(255,255,255,.018)); border-radius: 28px; padding: 32px; min-height: 515px; }
+    .score-main { font-size: 102px; font-weight: 950; letter-spacing: -.07em; line-height: .9; color: var(--fiap); margin: 20px 0 12px; }
+    .score-caption { font-size: 20px; color: #d5d5da; line-height: 1.4; }
+    .mini-metrics { display: grid; grid-template-columns: repeat(2,1fr); gap: 14px; margin-top: 30px; }
+    .mini { border-radius: 16px; padding: 20px; background: rgba(255,255,255,.035); border: 1px solid rgba(255,255,255,.1); }
+    .mini strong { display: block; font-size: 31px; line-height: 1; margin-bottom: 8px; }
+    .mini span { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .09em; font-weight: 800; }
+    .confusion { display: grid; grid-template-columns: repeat(2,1fr); gap: 14px; margin-top: 30px; }
+    .cell { min-height: 110px; padding: 22px; border-radius: 18px; background: rgba(255,255,255,.035); border: 1px solid rgba(255,255,255,.1); }
+    .cell.good { background: rgba(125,255,178,.07); border-color: rgba(125,255,178,.25); }
+    .cell.warn { background: rgba(255,209,102,.06); border-color: rgba(255,209,102,.20); }
+    .cell span { display: block; color: #aaaab2; text-transform: uppercase; font-size: 12px; letter-spacing: .11em; font-weight: 900; margin-bottom: 8px; }
+    .cell strong { font-size: 34px; }
+
+    .value-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 38px; position: relative; z-index: 2; }
+    .value-card { min-height: 390px; padding: 30px; border-radius: 26px; border: 1px solid rgba(255,255,255,.12); background: linear-gradient(160deg, rgba(255,255,255,.065), rgba(255,255,255,.018)); position: relative; overflow: hidden; }
+    .value-card::after { content: ""; position: absolute; width: 180px; height: 180px; border-radius: 50%; background: rgba(237,20,91,.08); right: -75px; bottom: -75px; }
+    .value-num { font-size: 15px; color: var(--fiap); font-weight: 900; letter-spacing: .14em; margin-bottom: 46px; }
+    .value-card h3 { font-size: 30px; margin-bottom: 17px; }
+    .value-card p { color: #b2b2ba; line-height: 1.48; font-size: 16px; }
+    .value-outcome { position: absolute; bottom: 28px; left: 30px; right: 30px; font-size: 13px; color: #dedee2; border-top: 1px solid rgba(255,255,255,.1); padding-top: 15px; }
+
+    .ai-layout { display: grid; grid-template-columns: .92fr 1.08fr; gap: 44px; height: calc(100% - 80px); align-items: center; position: relative; z-index: 2; }
+    .ai-core { position: relative; height: 560px; display: grid; place-items: center; }
+    .ai-circle { width: 260px; height: 260px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #ff7ca9, var(--fiap) 38%, #6d082f 75%); display: grid; place-items: center; text-align: center; font-size: 28px; font-weight: 900; box-shadow: 0 0 90px rgba(237,20,91,.28); z-index: 2; }
+    .ai-ring { position: absolute; width: 440px; height: 440px; border-radius: 50%; border: 1px solid rgba(255,255,255,.16); }
+    .ai-node { position: absolute; width: 165px; padding: 15px; border: 1px solid rgba(255,255,255,.13); border-radius: 15px; background: #101014; text-align: center; font-size: 13px; line-height: 1.35; color: #c1c1c8; }
+    .ai-node b { color: white; display: block; margin-bottom: 4px; }
+    .n1 { top: 20px; left: 200px; } .n2 { right: 10px; top: 208px; } .n3 { bottom: 24px; left: 210px; } .n4 { left: 0; top: 214px; }
+    .ai-list { display: grid; gap: 16px; margin-top: 28px; }
+    .ai-item { display: grid; grid-template-columns: 55px 1fr; gap: 16px; align-items: center; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.027); border-radius: 16px; padding: 17px; }
+    .ai-item .ai-icon { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; color: var(--fiap); background: rgba(237,20,91,.1); font-weight: 900; }
+    .ai-item b { display: block; margin-bottom: 4px; }
+    .ai-item span { color: #aaaab2; font-size: 13px; line-height: 1.4; }
+    .guardrail { margin-top: 20px; padding: 15px 18px; border-left: 4px solid var(--yellow); background: rgba(255,209,102,.055); color: #d7d1bf; font-size: 13px; line-height: 1.45; }
+
+    .closing { display: flex; flex-direction: column; justify-content: center; height: 100%; position: relative; z-index: 2; max-width: 1280px; }
+    .closing h2 { font-size: 78px; max-width: 1120px; }
+    .closing-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 38px; max-width: 1150px; }
+    .closing-pill { padding: 19px 20px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.035); border-radius: 15px; font-size: 15px; color: #d0d0d5; }
+    .closing-pill b { color: white; }
+    .closing-quote { margin-top: 42px; color: var(--fiap); font-size: 19px; font-weight: 800; letter-spacing: .03em; }
+    .closing-name { margin-top: 38px; font-size: 18px; color: #dcdce0; }
+    .magenta-block { position: absolute; width: 440px; height: 1000px; right: -220px; top: -70px; background: linear-gradient(180deg, rgba(237,20,91,.95), rgba(116,5,47,.6)); transform: rotate(15deg); opacity: .82; }
+
+    .progress { position: fixed; left: 0; bottom: 0; height: 5px; background: var(--fiap); width: 0; transition: width .3s ease; z-index: 9999; box-shadow: 0 0 18px rgba(237,20,91,.7); }
+    .controls { position: fixed; right: 18px; bottom: 18px; z-index: 10000; display: flex; gap: 8px; opacity: .35; transition: opacity .2s ease; }
+    .controls:hover { opacity: 1; }
+    .control-btn { border: 1px solid rgba(255,255,255,.17); color: white; background: rgba(10,10,12,.72); padding: 10px 13px; border-radius: 10px; cursor: pointer; font-size: 13px; backdrop-filter: blur(10px); }
+    .speaker-panel { position: fixed; left: 18px; bottom: 18px; width: min(660px, calc(100vw - 36px)); max-height: 38vh; overflow-y: auto; z-index: 10001; border-radius: 16px; padding: 18px 20px; background: rgba(5,5,7,.94); border: 1px solid rgba(255,255,255,.18); box-shadow: 0 20px 50px rgba(0,0,0,.55); display: none; font-size: 14px; line-height: 1.5; color: #d2d2d7; }
+    .speaker-panel.open { display: block; }
+    .speaker-panel strong { color: var(--fiap); }
+    .speaker-notes { display: none; }
+    .help { position: fixed; inset: 0; z-index: 10010; display: none; place-items: center; background: rgba(0,0,0,.78); backdrop-filter: blur(10px); }
+    .help.open { display: grid; }
+    .help-card { width: 560px; padding: 32px; border-radius: 22px; background: #101014; border: 1px solid rgba(255,255,255,.16); }
+    .help-card h3 { margin-bottom: 20px; }
+    .shortcut { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.08); color: #c2c2c8; }
+    kbd { background: #24242a; border: 1px solid #3a3a42; border-radius: 6px; padding: 3px 8px; color: white; }
+
+    @media print {
+      html, body { overflow: visible; background: white; }
+      .stage { display: block; background: white; position: static; }
+      .deck { transform: none !important; width: 1600px; height: auto; box-shadow: none; overflow: visible; }
+      .slide { display: block !important; position: relative; width: 1600px; height: 900px; break-after: page; }
+      .controls, .progress, .speaker-panel, .help { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+<div class="stage">
+  <main class="deck" id="deck">
+
+    <!-- SLIDE 1 -->
+    <section class="slide active grid-bg noise" data-title="Capa">
+      <div class="brand">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 28" aria-label="FIAP"><path fill="#ed145b" d="M30.906.205h-2.68v27.301h2.68zM17.667 12.929H7.344v2.537h10.323z"/><path fill="#ed145b" d="M0 27.506h2.671V2.742h20.421V.205H0zM89.786.1H73.742v27.3h2.68V2.636h13.22c4.808 0 7.675 2.264 7.675 6.062v.076c0 3.692-3.177 6.176-7.9 6.176H82.85v2.537h6.452c7.388 0 10.693-4.436 10.693-8.827v-.076C99.996 3.191 96.276.1 89.794.1zM53.631 0h-2.286L34.53 27.491h2.876l15.047-24.3 7.743 12.48h3.064zM62.813 19.872l4.739 7.62h2.988l-4.686-7.62z"/></svg>
+        <div class="brand-tag">Tech Challenge • Fase 3</div>
+      </div>
+      <div class="slide-no">01 / 08</div>
+      <div class="cover-orb"></div>
+      <div class="cover-orbit"></div>
+      <div class="hero-content">
+        <div class="cover-kicker">Machine Learning para políticas públicas</div>
+        <h1 class="cover-title">Predição da <span class="pink">alfabetização</span> no Brasil</h1>
+        <p class="cover-subtitle">Modelo supervisionado, explicável e validado temporalmente para apoiar inteligência analítica educacional.</p>
+        <div class="presenter"><div class="presenter-badge">V</div><div><strong>Vinicius Naziozeno Santoro do Rio</strong><br><span class="muted">FIAP • Tech Challenge</span></div></div>
+      </div>
+      <div class="footer"><span>Apresentação executiva</span><span>2026</span></div>
+      <div class="speaker-notes"><strong>Mensagem-chave:</strong> “Nesta fase, a pipeline deixa de ser apenas uma base analítica e passa a gerar um modelo supervisionado para estimar a probabilidade de alfabetização, com foco em explicabilidade e uso responsável.”</div>
+    </section>
+
+    <!-- SLIDE 2 -->
+    <section class="slide grid-bg noise" data-title="Problema de negócio">
+      <div class="brand"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 28"><path fill="#ed145b" d="M30.906.205h-2.68v27.301h2.68zM17.667 12.929H7.344v2.537h10.323z"/><path fill="#ed145b" d="M0 27.506h2.671V2.742h20.421V.205H0zM89.786.1H73.742v27.3h2.68V2.636h13.22c4.808 0 7.675 2.264 7.675 6.062v.076c0 3.692-3.177 6.176-7.9 6.176H82.85v2.537h6.452c7.388 0 10.693-4.436 10.693-8.827v-.076C99.996 3.191 96.276.1 89.794.1zM53.631 0h-2.286L34.53 27.491h2.876l15.047-24.3 7.743 12.48h3.064zM62.813 19.872l4.739 7.62h2.988l-4.686-7.62z"/></svg><div class="brand-tag">Problema de negócio</div></div>
+      <div class="slide-no">02 / 08</div>
+      <div class="two-col">
+        <div>
+          <div class="eyebrow">O desafio</div>
+          <h2>Ir além do retrato atual: <span class="pink">antecipar contextos de risco</span>.</h2>
+          <p class="lead">A alfabetização exige decisões rápidas, territoriais e baseadas em evidências. O desafio é transformar dados históricos em capacidade preditiva.</p>
+          <div class="challenge-list">
+            <div class="challenge-item"><div class="challenge-icon">01</div><div><div class="challenge-title">Desigualdade territorial</div><div class="challenge-text">UFs e municípios apresentam diferenças expressivas no resultado de alfabetização.</div></div></div>
+            <div class="challenge-item"><div class="challenge-icon">02</div><div><div class="challenge-title">Dados em múltiplas camadas</div><div class="challenge-text">Informações educacionais, territoriais e socioeconômicas precisam ser integradas.</div></div></div>
+            <div class="challenge-item"><div class="challenge-icon">03</div><div><div class="challenge-title">Risco de modelos vazados</div><div class="challenge-text">Variáveis como proficiência explicam o alvo diretamente e precisam ser excluídas.</div></div></div>
+          </div>
+        </div>
+        <div class="problem-card">
+          <div class="eyebrow">Pergunta executiva</div>
+          <div style="font-size:48px;font-weight:950;line-height:1.02;letter-spacing:-.04em;margin:22px 0 28px">Conseguimos prever se um aluno será alfabetizado?</div>
+          <p class="metric-label">Usando apenas variáveis disponíveis antes da avaliação: rede, UF, população e contexto do mercado formal municipal.</p>
+          <div class="big-number">5</div>
+          <div class="metric-label">features finais: poucas, explicáveis e auditáveis.</div>
+        </div>
+      </div>
+      <div class="footer"><span>Objetivo: apoio analítico, não decisão individual automática.</span><span>FIAP</span></div>
+      <div class="speaker-notes"><strong>Fala sugerida:</strong> “O problema de negócio é sair da análise puramente descritiva e começar a antecipar contextos de risco. Para isso, o modelo precisa ser simples, explicável e sem vazamento de informação.”</div>
+    </section>
+
+    <!-- SLIDE 3 -->
+    <section class="slide grid-bg noise" data-title="Arquitetura">
+      <div class="brand"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 28"><path fill="#ed145b" d="M30.906.205h-2.68v27.301h2.68zM17.667 12.929H7.344v2.537h10.323z"/><path fill="#ed145b" d="M0 27.506h2.671V2.742h20.421V.205H0zM89.786.1H73.742v27.3h2.68V2.636h13.22c4.808 0 7.675 2.264 7.675 6.062v.076c0 3.692-3.177 6.176-7.9 6.176H82.85v2.537h6.452c7.388 0 10.693-4.436 10.693-8.827v-.076C99.996 3.191 96.276.1 89.794.1zM53.631 0h-2.286L34.53 27.491h2.876l15.047-24.3 7.743 12.48h3.064zM62.813 19.872l4.739 7.62h2.988l-4.686-7.62z"/></svg><div class="brand-tag">Arquitetura da solução</div></div>
+      <div class="slide-no">03 / 08</div>
+      <div style="position:relative;z-index:2;padding-top:64px">
+        <div class="eyebrow">Lakehouse + Machine Learning</div>
+        <h2 style="margin-bottom:10px">A Fase 3 reaproveita a base confiável da Fase 2 e adiciona predição.</h2>
+        <p class="lead" style="font-size:21px">A solução integra dados educacionais, população e RAIS em uma Gold individual para modelagem supervisionada.</p>
+        <div class="arch-wrap">
+          <div class="arch-row">
+            <div class="arch-card"><div class="arch-label">Origem</div><div class="arch-title">Fase 2</div><ul class="arch-list"><li>Bronze, Silver e Gold</li><li>Microdados de alunos</li><li>Qualidade e rastreabilidade</li><li>Base `fato_alunos`</li></ul></div>
+            <div class="arrow">→</div>
+            <div class="arch-card"><div class="arch-label">Enriquecimento</div><div class="arch-title">IBGE + RAIS</div><ul class="arch-list"><li>População municipal</li><li>Vínculos formais</li><li>RAIS defasada</li><li>100% de cobertura</li></ul></div>
+            <div class="arrow">→</div>
+            <div class="arch-card highlight"><div class="arch-label">Gold ML</div><div class="arch-title">Base individual</div><ul class="arch-list"><li>1 linha por aluno/ano</li><li>Target binário</li><li>2023 desenvolvimento</li><li>2024 teste temporal</li></ul></div>
+            <div class="arrow">→</div>
+            <div class="arch-card"><div class="arch-label">Modelo</div><div class="arch-title">Regressão Logística</div><ul class="arch-list"><li>Pipeline Spark ML</li><li>Preprocessing integrado</li><li>Modelo enxuto</li><li>Baixo custo</li></ul></div>
+            <div class="arrow">→</div>
+            <div class="arch-card"><div class="arch-label">Valor</div><div class="arch-title">Decisão</div><ul class="arch-list"><li>Priorização territorial</li><li>Risco de não alfabetização</li><li>Coeficientes explicáveis</li><li>Base para IA</li></ul></div>
+          </div>
+          <div class="observability-bar">
+            <div class="obs-item"><strong>Qualidade:</strong> nulos, unicidade, cobertura e leakage.</div>
+            <div class="obs-item"><strong>Temporalidade:</strong> treino em 2023 e teste em 2024.</div>
+            <div class="obs-item"><strong>FinOps:</strong> serverless, amostra de tuning e modelo leve.</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Databricks • Spark ML • Delta Lake • Unity Catalog</span><span>FIAP</span></div>
+      <div class="speaker-notes"><strong>Fala sugerida:</strong> “A arquitetura parte da Lakehouse já construída, incorpora dados socioeconômicos e cria uma Gold individual para modelagem. O modelo é treinado sobre 2023 e avaliado em 2024 para simular uso real com dados históricos.”</div>
+    </section>
+
+    <!-- SLIDE 4 -->
+    <section class="slide grid-bg noise" data-title="Base e evidências">
+      <div class="brand"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 28"><path fill="#ed145b" d="M30.906.205h-2.68v27.301h2.68zM17.667 12.929H7.344v2.537h10.323z"/><path fill="#ed145b" d="M0 27.506h2.671V2.742h20.421V.205H0zM89.786.1H73.742v27.3h2.68V2.636h13.22c4.808 0 7.675 2.264 7.675 6.062v.076c0 3.692-3.177 6.176-7.9 6.176H82.85v2.537h6.452c7.388 0 10.693-4.436 10.693-8.827v-.076C99.996 3.191 96.276.1 89.794.1zM53.631 0h-2.286L34.53 27.491h2.876l15.047-24.3 7.743 12.48h3.064zM62.813 19.872l4.739 7.62h2.988l-4.686-7.62z"/></svg><div class="brand-tag">Base validada</div></div>
+      <div class="slide-no">04 / 08</div>
+      <div style="position:relative;z-index:2;padding-top:65px">
+        <div class="eyebrow">Pipeline executada de ponta a ponta</div>
+        <h2>Uma base individual robusta para modelagem supervisionada.</h2>
+        <div class="stats">
+          <div class="stat primary"><em>Microdados</em><strong>3,87 mi</strong><span>registros na Gold individual de modelagem.</span></div>
+          <div class="stat"><em>Treino</em><strong>1,75 mi</strong><span>alunos de 2023 para desenvolvimento e tuning.</span></div>
+          <div class="stat"><em>Teste temporal</em><strong>2,12 mi</strong><span>alunos de 2024 para avaliação out-of-time.</span></div>
+          <div class="stat"><em>Cobertura</em><strong>100%</strong><span>municípios com população e RAIS integradas.</span></div>
+        </div>
+        <div class="pipeline-progress">
+          <div class="step done"><b>00</b>Diagnóstico</div>
+          <div class="step done"><b>01</b>Socioeconômico</div>
+          <div class="step done"><b>02</b>Gold ML</div>
+          <div class="step done"><b>03</b>EDA</div>
+          <div class="step done"><b>04</b>Modelagem</div>
+          <div class="step done"><b>05</b>Avaliação</div>
+        </div>
+      </div>
+      <div class="footer"><span>Todos os notebooks executados e registrados em vídeo.</span><span>Resultados observados na execução</span></div>
+      <div class="speaker-notes"><strong>Fala sugerida:</strong> “A base final tem 3,87 milhões de registros, sem duplicidade aluno-ano, com 100% de cobertura socioeconômica nos municípios presentes. A separação temporal é clara: 2023 para desenvolvimento e 2024 como teste final.”</div>
+    </section>
+
+    <!-- SLIDE 5 -->
+    <section class="slide grid-bg noise" data-title="Modelo explicável">
+      <div class="brand"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 28"><path fill="#ed145b" d="M30.906.205h-2.68v27.301h2.68zM17.667 12.929H7.344v2.537h10.323z"/><path fill="#ed145b" d="M0 27.506h2.671V2.742h20.421V.205H0zM89.786.1H73.742v27.3h2.68V2.636h13.22c4.808 0 7.675 2.264 7.675 6.062v.076c0 3.692-3.177 6.176-7.9 6.176H82.85v2.537h6.452c7.388 0 10.693-4.436 10.693-8.827v-.076C99.996 3.191 96.276.1 89.794.1zM53.631 0h-2.286L34.53 27.491h2.876l15.047-24.3 7.743 12.48h3.064zM62.813 19.872l4.739 7.62h2.988l-4.686-7.62z"/></svg><div class="brand-tag">Modelo supervisionado</div></div>
+      <div class="slide-no">05 / 08</div>
+      <div class="model-layout">
+        <div>
+          <div class="eyebrow">Menos é mais</div>
+          <h2>Regressão Logística enxuta, auditável e fácil de defender.</h2>
+          <p class="lead" style="font-size:21px">A solução evita modelos caixa-preta e foca em um conjunto pequeno de variáveis sem leakage.</p>
+          <div class="guardrail"><strong>Decisão metodológica:</strong> proficiência, id_aluno, id_municipio, id_escola e variáveis operacionais não entram no modelo.</div>
+        </div>
+        <div class="model-card">
+          <div class="model-badge">Modelo final</div>
+          <div class="formula">P(alfabetizado)<br><span class="pink">= f(contexto)</span></div>
+          <div class="feature-grid">
+            <div class="feature"><b>rede</b><br><span class="muted">contexto educacional</span></div>
+            <div class="feature"><b>sigla_uf</b><br><span class="muted">território</span></div>
+            <div class="feature"><b>log_populacao</b><br><span class="muted">porte municipal</span></div>
+            <div class="feature"><b>vínculos / 1000</b><br><span class="muted">mercado formal</span></div>
+            <div class="feature"><b>proporção estatutários</b><br><span class="muted">composição do emprego</span></div>
+            <div class="feature"><b>regParam = 0</b><br><span class="muted">melhor validação</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Pipeline: StringIndexer → OneHotEncoder → StandardScaler → LogisticRegression</span><span>FIAP</span></div>
+      <div class="speaker-notes"><strong>Fala sugerida:</strong> “A escolha foi proposital: um modelo simples, auditável e de baixo custo. A regressão logística permite explicar os coeficientes e mostrar quais fatores territoriais e socioeconômicos estão associados ao resultado.”</div>
+    </section>
+
+    <!-- SLIDE 6 -->
+    <section class="slide grid-bg noise" data-title="Resultados">
+      <div class="brand"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 28"><path fill="#ed145b" d="M30.906.205h-2.68v27.301h2.68zM17.667 12.929H7.344v2.537h10.323z"/><path fill="#ed145b" d="M0 27.506h2.671V2.742h20.421V.205H0zM89.786.1H73.742v27.3h2.68V2.636h13.22c4.808 0 7.675 2.264 7.675 6.062v.076c0 3.692-3.177 6.176-7.9 6.176H82.85v2.537h6.452c7.388 0 10.693-4.436 10.693-8.827v-.076C99.996 3.191 96.276.1 89.794.1zM53.631 0h-2.286L34.53 27.491h2.876l15.047-24.3 7.743 12.48h3.064zM62.813 19.872l4.739 7.62h2.988l-4.686-7.62z"/></svg><div class="brand-tag">Resultado do modelo</div></div>
+      <div class="slide-no">06 / 08</div>
+      <div class="result-layout">
+        <div class="result-card">
+          <div class="eyebrow">Teste temporal 2024</div>
+          <div class="score-main">0,621</div>
+          <div class="score-caption">ROC-AUC do modelo final em 2,12 milhões de alunos avaliados fora do período de treinamento.</div>
+          <div class="mini-metrics">
+            <div class="mini"><span>Accuracy</span><strong>58,55%</strong></div>
+            <div class="mini"><span>Baseline</span><strong>52,21%</strong></div>
+            <div class="mini"><span>Ganho</span><strong>+6,34 p.p.</strong></div>
+            <div class="mini"><span>Macro-F1</span><strong>58,54%</strong></div>
+          </div>
+        </div>
+        <div class="result-card">
+          <div class="eyebrow">Matriz de confusão</div>
+          <h3 style="font-size:34px;margin-bottom:12px">O modelo não apenas replica a classe majoritária.</h3>
+          <p class="muted" style="font-size:17px;line-height:1.45">Ele acerta tanto parte dos alfabetizados quanto parte dos não alfabetizados, com desempenho moderado e estável.</p>
+          <div class="confusion">
+            <div class="cell good"><span>TP</span><strong>638.778</strong></div>
+            <div class="cell good"><span>TN</span><strong>602.884</strong></div>
+            <div class="cell warn"><span>FP</span><strong>410.557</strong></div>
+            <div class="cell warn"><span>FN</span><strong>468.341</strong></div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Validação 2023: ROC-AUC 0,636982 • Teste 2024: ROC-AUC 0,621262</span><span>FIAP</span></div>
+      <div class="speaker-notes"><strong>Fala sugerida:</strong> “O resultado não é vendido como perfeito. Ele é moderado, mas real: supera o baseline em 6,34 pontos percentuais e mantém ROC-AUC de 0,621 no teste temporal de 2024. Isso mostra sinal preditivo, com estabilidade razoável.”</div>
+    </section>
+
+    <!-- SLIDE 7 -->
+    <section class="slide grid-bg noise" data-title="Valor e interpretabilidade">
+      <div class="brand"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 28"><path fill="#ed145b" d="M30.906.205h-2.68v27.301h2.68zM17.667 12.929H7.344v2.537h10.323z"/><path fill="#ed145b" d="M0 27.506h2.671V2.742h20.421V.205H0zM89.786.1H73.742v27.3h2.68V2.636h13.22c4.808 0 7.675 2.264 7.675 6.062v.076c0 3.692-3.177 6.176-7.9 6.176H82.85v2.537h6.452c7.388 0 10.693-4.436 10.693-8.827v-.076C99.996 3.191 96.276.1 89.794.1zM53.631 0h-2.286L34.53 27.491h2.876l15.047-24.3 7.743 12.48h3.064zM62.813 19.872l4.739 7.62h2.988l-4.686-7.62z"/></svg><div class="brand-tag">Valor para stakeholders</div></div>
+      <div class="slide-no">07 / 08</div>
+      <div style="position:relative;z-index:2;padding-top:68px">
+        <div class="eyebrow">Do coeficiente à decisão</div>
+        <h2>A maior força do modelo está em explicar <span class="pink">contextos territoriais</span>.</h2>
+        <div class="value-grid">
+          <div class="value-card"><div class="value-num">01 • PRIORIZAR</div><h3>Onde investigar primeiro?</h3><p>UFs e territórios com maior associação ao risco de não alfabetização podem receber análise prioritária.</p><div class="value-outcome"><strong>Exemplo:</strong> o componente territorial domina os coeficientes.</div></div>
+          <div class="value-card"><div class="value-num">02 • EXPLICAR</div><h3>Quais fatores aparecem?</h3><p>População, intensidade do mercado formal e rede ajudam a compor a leitura contextual.</p><div class="value-outcome"><strong>Resultado:</strong> interpretação por coeficientes e odds ratios.</div></div>
+          <div class="value-card"><div class="value-num">03 • GOVERNAR</div><h3>Como usar com segurança?</h3><p>O modelo apoia análise territorial, mas não deve decidir individualmente sobre estudantes.</p><div class="value-outcome"><strong>Guardrail:</strong> associação não é causalidade.</div></div>
+        </div>
+      </div>
+      <div class="footer"><span>Uso recomendado: inteligência territorial e apoio à formulação de hipóteses.</span><span>FIAP</span></div>
+      <div class="speaker-notes"><strong>Fala sugerida:</strong> “O valor para a liderança não está em substituir especialistas, mas em direcionar atenção. O modelo mostra quais contextos aparecem associados ao risco e ajuda a priorizar investigação, sempre com revisão humana e cuidado metodológico.”</div>
+    </section>
+
+    <!-- SLIDE 8 -->
+    <section class="slide grid-bg noise" data-title="IA e fechamento">
+      <div class="brand"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 28"><path fill="#ed145b" d="M30.906.205h-2.68v27.301h2.68zM17.667 12.929H7.344v2.537h10.323z"/><path fill="#ed145b" d="M0 27.506h2.671V2.742h20.421V.205H0zM89.786.1H73.742v27.3h2.68V2.636h13.22c4.808 0 7.675 2.264 7.675 6.062v.076c0 3.692-3.177 6.176-7.9 6.176H82.85v2.537h6.452c7.388 0 10.693-4.436 10.693-8.827v-.076C99.996 3.191 96.276.1 89.794.1zM53.631 0h-2.286L34.53 27.491h2.876l15.047-24.3 7.743 12.48h3.064zM62.813 19.872l4.739 7.62h2.988l-4.686-7.62z"/></svg><div class="brand-tag">Potencial de inteligência artificial</div></div>
+      <div class="slide-no">08 / 08</div>
+      <div class="magenta-block"></div>
+      <div class="closing">
+        <div class="eyebrow">Conclusão executiva</div>
+        <h2>A solução cria uma ponte entre <span class="pink">dados confiáveis</span>, modelagem explicável e políticas públicas.</h2>
+        <div class="closing-summary">
+          <div class="closing-pill"><b>Hoje:</b><br>modelo supervisionado com validação temporal e explicabilidade.</div>
+          <div class="closing-pill"><b>Próximo passo:</b><br>MLflow, monitoramento de drift e novas variáveis educacionais.</div>
+          <div class="closing-pill"><b>Potencial:</b><br>predição, priorização territorial e análise de desigualdade.</div>
+        </div>
+        <div class="closing-quote">“O modelo não promete substituir a decisão pública. Ele organiza evidências para decidir melhor.”</div>
+        <div class="closing-name"><strong>Vinicius Naziozeno Santoro do Rio</strong><br><span class="muted">FIAP • Tech Challenge Fase 3</span></div>
+      </div>
+      <div class="footer"><span>Machine Learning supervisionado • Educação • IA responsável</span><span>Obrigado</span></div>
+      <div class="speaker-notes"><strong>Fala sugerida:</strong> “Como fechamento, a principal entrega é uma solução completa: dados tratados, Gold de modelagem, modelo simples, avaliação temporal e interpretação. É uma base sólida para evoluir para IA com governança, monitoramento e uso responsável.”</div>
+    </section>
+
+  </main>
+</div>
+
+<div class="progress" id="progress"></div>
+<div class="controls">
+  <button class="control-btn" onclick="prevSlide()">←</button>
+  <button class="control-btn" onclick="nextSlide()">→</button>
+  <button class="control-btn" onclick="toggleNotes()">Notas</button>
+  <button class="control-btn" onclick="toggleHelp()">?</button>
+</div>
+<div class="speaker-panel" id="speakerPanel"></div>
+<div class="help" id="help"><div class="help-card"><h3>Controles</h3><div class="shortcut"><span>Próximo slide</span><kbd>→</kbd></div><div class="shortcut"><span>Slide anterior</span><kbd>←</kbd></div><div class="shortcut"><span>Notas do apresentador</span><kbd>N</kbd></div><div class="shortcut"><span>Tela cheia</span><kbd>F</kbd></div><div class="shortcut"><span>Ajuda</span><kbd>?</kbd></div></div></div>
+
+<script>
+  const deck = document.getElementById('deck');
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const progress = document.getElementById('progress');
+  const speakerPanel = document.getElementById('speakerPanel');
+  const help = document.getElementById('help');
+  let current = 0;
+
+  function scaleDeck() {
+    const scale = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+    deck.style.transform = `scale(${scale})`;
+  }
+
+  function update() {
+    slides.forEach((slide, i) => slide.classList.toggle('active', i === current));
+    progress.style.width = `${((current + 1) / slides.length) * 100}%`;
+    if (speakerPanel.classList.contains('open')) updateNotes();
+  }
+
+  function updateNotes() {
+    const notes = slides[current].querySelector('.speaker-notes');
+    speakerPanel.innerHTML = notes ? notes.innerHTML : '<strong>Notas:</strong> sem notas neste slide.';
+  }
+
+  function nextSlide() { current = Math.min(current + 1, slides.length - 1); update(); }
+  function prevSlide() { current = Math.max(current - 1, 0); update(); }
+  function toggleNotes() { speakerPanel.classList.toggle('open'); updateNotes(); }
+  function toggleHelp() { help.classList.toggle('open'); }
+  function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+
+  window.addEventListener('resize', scaleDeck);
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') nextSlide();
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') prevSlide();
+    if (e.key.toLowerCase() === 'n') toggleNotes();
+    if (e.key.toLowerCase() === 'f') toggleFullscreen();
+    if (e.key === '?') toggleHelp();
+    if (e.key === 'Escape') help.classList.remove('open');
+  });
+
+  scaleDeck();
+  update();
+</script>
+</body>
+</html>

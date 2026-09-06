@@ -940,17 +940,10 @@ tech-challenge-fase3/
 │   ├── 03_eda.ipynb
 │   ├── 04_modelagem_supervisionada.ipynb
 │   └── 05_avaliacao_interpretabilidade.ipynb
-├── data/
 ├── reports/
-├── images/
-├── src/
-│   ├── preprocessing/
-│   ├── modeling/
-│   ├── evaluation/
-│   └── visualization/
-├── requirements.txt
-├── .gitignore
-└── README.md
+│   └── apresentacao_executiva_fase3.html
+├── README.md
+└── requiriments.txt
 ```
 
 ### Responsabilidade dos notebooks
