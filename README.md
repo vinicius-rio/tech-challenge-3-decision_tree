@@ -1011,8 +1011,6 @@ workspace.alfabetizacao_gold.coeficientes_modelo_fase3
 > Todos os notebooks da Fase 3 foram executados individualmente no Databricks.  
 > Esta seção registra a finalidade, as principais evidências e o vídeo de execução de cada etapa.
 
-> Os links abaixo devem ser substituídos pelos vídeos enviados ao GitHub em `user-attachments`.
-
 ---
 
 ### 17.1 Notebook 00 — Diagnóstico da base de modelagem
