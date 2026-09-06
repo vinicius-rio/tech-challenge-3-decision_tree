@@ -24,7 +24,7 @@ O projeto foi desenvolvido como entrega do **Tech Challenge — Fase 3**, dando 
 - [14. Decisões metodológicas e trade-offs](#14-decisões-metodológicas-e-trade-offs)
 - [15. Estrutura do repositório](#15-estrutura-do-repositório)
 - [16. Como executar](#16-como-executar)
-- [17. Resultados da execução](#17-resultados-da-execução)
+- [17. Resultados da execução](#17-resultados-da-execução) (a execução com evidências de cada notebook está aqui!)
 - [18. Estratégia de Git](#18-estratégia-de-git)
 - [19. Limitações e evoluções futuras](#19-limitações-e-evoluções-futuras)
 - [20. Referências](#20-referências)
@@ -1058,9 +1058,7 @@ A análise também demonstrou que `id_aluno` não deve ser tratado como identifi
 
 **Vídeo de evidência:**
 
-```text
-ADICIONAR_LINK_VIDEO_NOTEBOOK_00
-```
+https://github.com/user-attachments/assets/f0c42506-6ad3-49e7-ba20-8cdacfd5e480
 
 ---
 
@@ -1107,9 +1105,7 @@ workspace.alfabetizacao_silver.socioeconomico_municipio
 
 **Vídeo de evidência:**
 
-```text
-ADICIONAR_LINK_VIDEO_NOTEBOOK_01
-```
+https://github.com/user-attachments/assets/cd2684d4-ec69-4190-86d1-a9e6122d432d
 
 ---
 
@@ -1146,9 +1142,7 @@ workspace.alfabetizacao_gold.base_modelagem_aluno
 
 **Vídeo de evidência:**
 
-```text
-ADICIONAR_LINK_VIDEO_NOTEBOOK_02
-```
+https://github.com/user-attachments/assets/8f15ae53-b1c3-4e04-9fb9-0566b9d3698f
 
 ---
 
@@ -1185,9 +1179,7 @@ Esse diagnóstico orientou a seleção de um conjunto reduzido de features.
 
 **Vídeo de evidência:**
 
-```text
-ADICIONAR_LINK_VIDEO_NOTEBOOK_03
-```
+https://github.com/user-attachments/assets/2491dc58-d8d5-42f9-9a8b-e03ecf7ac7ff
 
 ---
 
@@ -1227,9 +1219,8 @@ Depois da seleção, o modelo é treinado novamente utilizando todos os dados de
 
 **Vídeo de evidência:**
 
-```text
-ADICIONAR_LINK_VIDEO_NOTEBOOK_04
-```
+https://github.com/user-attachments/assets/c7267068-17eb-4682-9432-38c23d8e5dab
+
 
 ---
 
@@ -1299,9 +1290,7 @@ workspace.alfabetizacao_gold.coeficientes_modelo_fase3
 
 **Vídeo de evidência:**
 
-```text
-ADICIONAR_LINK_VIDEO_NOTEBOOK_05
-```
+https://github.com/user-attachments/assets/6730724c-9816-4980-acf3-4f8a3232b080
 
 ---
 
